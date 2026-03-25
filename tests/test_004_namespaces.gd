@@ -38,6 +38,8 @@ func _on_namespace_connected(namespace_path: String):
 	ns_connected = namespace_path
 
 func test_006_socketio_namespaces():
+	var sent_eio_open = false
+	
 	var err = SocketIOClient.connect_to_url("ws://127.0.0.1:%d" % TEST_PORT)
 	assert_eq(err, OK, "Client fires targeting local sequence.")
 	
@@ -66,12 +68,23 @@ func test_006_socketio_namespaces():
 		# Wait for '/' connect request natively
 		time_waited = 0.0
 		while time_waited < 1.0:
-			mock_server_peer.poll()
 			SocketIOClient.poll()
-			if mock_server_peer.get_available_packet_count() > 0:
-				var pkt = mock_server_peer.get_packet().get_string_from_utf8()
-				if pkt.begins_with("0"):
-					mock_server_peer.send_text("0[{\"sid\":\"mock-123\"}]")
+			if tcp_server.is_connection_available():
+				var temp_peer = tcp_server.take_connection()
+				mock_server_peer = WebSocketPeer.new()
+				mock_server_peer.accept_stream(temp_peer)
+				
+			if mock_server_peer != null:
+				mock_server_peer.poll()
+				
+				if mock_server_peer.get_ready_state() == WebSocketPeer.STATE_OPEN and not sent_eio_open:
+					mock_server_peer.send_text("0{\"sid\":\"mock-engine-sid\",\"upgrades\":[],\"pingInterval\":25000,\"pingTimeout\":20000}")
+					sent_eio_open = true
+					
+				if mock_server_peer.get_available_packet_count() > 0:
+					var pkt = mock_server_peer.get_packet().get_string_from_utf8()
+					if pkt.begins_with("40"):
+						mock_server_peer.send_text("40[{\"sid\":\"mock-123\"}]")
 			if client_connected:
 				break
 			await get_tree().create_timer(0.05).timeout
@@ -92,11 +105,11 @@ func test_006_socketio_namespaces():
 			SocketIOClient.poll()
 			if mock_server_peer.get_available_packet_count() > 0:
 				var pkt = mock_server_peer.get_packet().get_string_from_utf8()
-				# The client should send something tracking "/lobby" like "0/lobby,[]"
-				if pkt.contains("/lobby"):
+				# The client should send something tracking "/lobby" like "40/lobby,"
+				if pkt.contains("40/lobby"):
 					received_lobby_req = true
-					# Respond matching explicit sequence standard 0/lobby,...
-					mock_server_peer.send_text("0/lobby,[{\"sid\":\"mock-123\"}]")
+					# Respond matching explicit sequence standard 40/lobby,...
+					mock_server_peer.send_text("40/lobby,[{\"sid\":\"mock-123\"}]")
 			if ns_connected == "/lobby":
 				break
 			await get_tree().create_timer(0.05).timeout
