@@ -10,9 +10,13 @@ config_version=5
 
 [application]
 
-config/name="socketio_module_tests"
+config/name="SocketIO Module Test"
 config/features=PackedStringArray("4.3.2", "GL Compatibility")
 config/icon="res://icon.svg"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gut/plugin.cfg")
 
 [rendering]
 
