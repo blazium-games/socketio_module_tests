@@ -74,7 +74,7 @@ func test_007_nodejs_integration():
 			assert_eq(received_events[0].data.get("user", ""), "admin", "Dictionary maps string matches exactly.")
 			
 		# Test emitting to Node.js
-		root_ns.emit("client_event", [{"message": "hello from godot!"}])
+		root_ns.emit("client_event", [{"message": "Hello from Blazium!"}])
 		
 		# Test ACK callbacks
 		root_ns.emit_with_ack("request_data", [{"query": "fetch"}], _on_ack_received, 5.0)
