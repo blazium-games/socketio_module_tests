@@ -1,4 +1,4 @@
-extends GutTest
+extends AutoworkTest
 
 var tcp_server: TCPServer
 var mock_server_peer: WebSocketPeer
@@ -47,7 +47,7 @@ func test_004_engine_io_handshake():
 		if tcp_server.is_connection_available():
 			stream = tcp_server.take_connection()
 			break
-		await get_tree().create_timer(0.05).timeout
+		OS.delay_msec(50)
 		time_waited += 0.05
 		SocketIOClient.poll()
 		
@@ -63,7 +63,7 @@ func test_004_engine_io_handshake():
 		while time_waited < 2.0 and mock_server_peer.get_ready_state() != WebSocketPeer.STATE_OPEN:
 			mock_server_peer.poll()
 			SocketIOClient.poll()
-			await get_tree().create_timer(0.05).timeout
+			OS.delay_msec(50)
 			time_waited += 0.05
 			
 		assert_eq(mock_server_peer.get_ready_state(), WebSocketPeer.STATE_OPEN, "Handshake completed securely.")
@@ -96,7 +96,7 @@ func test_004_engine_io_handshake():
 			if client_connected:
 				break
 				
-			await get_tree().create_timer(0.05).timeout
+			OS.delay_msec(50)
 			time_waited += 0.05
 			
 		assert_true(received_connect_request, "Target engine dispatched namespace CONNECT signature natively.")

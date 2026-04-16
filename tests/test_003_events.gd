@@ -1,4 +1,4 @@
-extends GutTest
+extends AutoworkTest
 
 var tcp_server: TCPServer
 var mock_server_peer: WebSocketPeer
@@ -52,7 +52,7 @@ func test_005_socketio_events():
 		if tcp_server.is_connection_available():
 			stream = tcp_server.take_connection()
 			break
-		await get_tree().create_timer(0.05).timeout
+		OS.delay_msec(50)
 		time_waited += 0.05
 		SocketIOClient.poll()
 		
@@ -67,7 +67,7 @@ func test_005_socketio_events():
 		while time_waited < 2.0 and mock_server_peer.get_ready_state() != WebSocketPeer.STATE_OPEN:
 			mock_server_peer.poll()
 			SocketIOClient.poll()
-			await get_tree().create_timer(0.05).timeout
+			OS.delay_msec(50)
 			time_waited += 0.05
 			
 		# Wait for connect request
@@ -93,7 +93,7 @@ func test_005_socketio_events():
 						mock_server_peer.send_text("40[{\"sid\":\"mock-123\"}]")
 			if client_connected:
 				break
-			await get_tree().create_timer(0.05).timeout
+			OS.delay_msec(50)
 			time_waited += 0.05
 			
 		assert_true(client_connected, "Signal connected explicitly fired.")
@@ -115,7 +115,7 @@ func test_005_socketio_events():
 			
 			if event_received == "chat_message":
 				break
-			await get_tree().create_timer(0.05).timeout
+			OS.delay_msec(50)
 			time_waited += 0.05
 			
 		assert_eq(event_received, "chat_message", "Custom generic event retrieved actively mapping payloads exactly.")

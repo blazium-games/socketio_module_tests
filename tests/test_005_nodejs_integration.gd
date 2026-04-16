@@ -1,4 +1,4 @@
-extends GutTest
+extends AutoworkTest
 
 var client_connected: bool = false
 var ns_connected: String = ""
@@ -54,7 +54,7 @@ func test_007_nodejs_integration():
 		SocketIOClient.poll()
 		if client_connected:
 			break
-		await get_tree().create_timer(0.05).timeout
+		OS.delay_msec(50)
 		time_waited += 0.05
 		
 	assert_true(client_connected, "Signal connected explicitly fired against Node.js.")
@@ -67,7 +67,7 @@ func test_007_nodejs_integration():
 			SocketIOClient.poll()
 			if received_events.size() > 0:
 				break
-			await get_tree().create_timer(0.05).timeout
+			OS.delay_msec(50)
 			time_waited += 0.05
 		assert_true(received_events.size() > 0, "Node.js standard initial `chat_message` parsed securely (Size: %d)." % received_events.size())
 		if received_events.size() > 0:
@@ -84,7 +84,7 @@ func test_007_nodejs_integration():
 			SocketIOClient.poll()
 			if ack_status:
 				break
-			await get_tree().create_timer(0.05).timeout
+			OS.delay_msec(50)
 			time_waited += 0.05
 			
 		assert_true(ack_status, "ACK callback natively executed triggered securely by Node.js responder.")
@@ -99,7 +99,7 @@ func test_007_nodejs_integration():
 			SocketIOClient.poll()
 			if ns_connected == "/lobby":
 				break
-			await get_tree().create_timer(0.05).timeout
+			OS.delay_msec(50)
 			time_waited += 0.05
 			
 		assert_eq(ns_connected, "/lobby", "Custom /lobby namespace successfully triggered bridging constraints perfectly.")

@@ -1,4 +1,4 @@
-extends GutTest
+extends AutoworkTest
 
 func before_each():
 	SocketIOClient.close()

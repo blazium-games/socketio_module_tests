@@ -1,4 +1,4 @@
-extends GutTest
+extends AutoworkTest
 
 var tcp_server: TCPServer
 var mock_server_peer: WebSocketPeer
@@ -49,7 +49,7 @@ func test_006_socketio_namespaces():
 		if tcp_server.is_connection_available():
 			stream = tcp_server.take_connection()
 			break
-		await get_tree().create_timer(0.05).timeout
+		OS.delay_msec(50)
 		time_waited += 0.05
 		SocketIOClient.poll()
 		
@@ -62,7 +62,7 @@ func test_006_socketio_namespaces():
 		while time_waited < 2.0 and mock_server_peer.get_ready_state() != WebSocketPeer.STATE_OPEN:
 			mock_server_peer.poll()
 			SocketIOClient.poll()
-			await get_tree().create_timer(0.05).timeout
+			OS.delay_msec(50)
 			time_waited += 0.05
 			
 		# Wait for '/' connect request natively
@@ -87,7 +87,7 @@ func test_006_socketio_namespaces():
 						mock_server_peer.send_text("40[{\"sid\":\"mock-123\"}]")
 			if client_connected:
 				break
-			await get_tree().create_timer(0.05).timeout
+			OS.delay_msec(50)
 			time_waited += 0.05
 			
 		assert_true(client_connected, "Signal connected explicitly fired.")
@@ -112,7 +112,7 @@ func test_006_socketio_namespaces():
 					mock_server_peer.send_text("40/lobby,[{\"sid\":\"mock-123\"}]")
 			if ns_connected == "/lobby":
 				break
-			await get_tree().create_timer(0.05).timeout
+			OS.delay_msec(50)
 			time_waited += 0.05
 			
 		assert_true(received_lobby_req, "Custom namespace mapping parsed securely.")
