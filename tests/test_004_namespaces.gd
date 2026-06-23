@@ -7,7 +7,7 @@ var ns_connected: String = ""
 
 const TEST_PORT = 9094
 
-func before_each():
+func _before_each():
 	SocketIOClient.close()
 	SocketIOClient.connected.connect(_on_client_connected)
 	SocketIOClient.namespace_connected.connect(_on_namespace_connected)
@@ -16,7 +16,7 @@ func before_each():
 	var err = tcp_server.listen(TEST_PORT)
 	assert_eq(err, OK, "Mock TCPServer allocated safely.")
 
-func after_each():
+func _after_each():
 	SocketIOClient.close()
 	if SocketIOClient.connected.is_connected(_on_client_connected):
 		SocketIOClient.connected.disconnect(_on_client_connected)

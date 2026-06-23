@@ -6,12 +6,12 @@ var received_events: Array = []
 var ack_status: bool = false
 var ack_payload: String = ""
 
-func before_each():
+func _before_each():
 	SocketIOClient.close()
 	SocketIOClient.connected.connect(_on_client_connected)
 	SocketIOClient.namespace_connected.connect(_on_namespace_connected)
 
-func after_each():
+func _after_each():
 	SocketIOClient.close()
 	if SocketIOClient.connected.is_connected(_on_client_connected):
 		SocketIOClient.connected.disconnect(_on_client_connected)
@@ -40,6 +40,9 @@ func _on_ack_received(data: Array):
 		ack_payload = data[0].get("payload", "")
 
 func test_007_nodejs_integration():
+	if not _is_node_server_available():
+		pending("Node.js Socket.IO server not running on localhost:3000")
+		return
 	# Connect to Node.js server
 	var err = SocketIOClient.connect_to_url("ws://localhost:3000")
 	assert_eq(err, OK, "Connection triggers safely to global Node.js bindings.")
@@ -103,3 +106,13 @@ func test_007_nodejs_integration():
 			time_waited += 0.05
 			
 		assert_eq(ns_connected, "/lobby", "Custom /lobby namespace successfully triggered bridging constraints perfectly.")
+
+func _is_node_server_available() -> bool:
+	var tcp := TCPServer.new()
+	var err := tcp.listen(3000)
+	if err == OK:
+		tcp.stop()
+		return false
+	if err == ERR_ALREADY_IN_USE:
+		return true
+	return false
