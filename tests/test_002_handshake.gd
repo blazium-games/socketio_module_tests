@@ -1,4 +1,4 @@
-extends GutTest
+extends AutoworkTest
 
 var tcp_server: TCPServer
 var mock_server_peer: WebSocketPeer
@@ -7,7 +7,7 @@ var captured_session_id: String = ""
 
 const TEST_PORT = 9092
 
-func before_each():
+func _before_each():
 	SocketIOClient.close()
 	SocketIOClient.connected.connect(_on_client_connected)
 	
@@ -15,7 +15,7 @@ func before_each():
 	var err = tcp_server.listen(TEST_PORT)
 	assert_eq(err, OK, "Mock TCPServer limits allocated safely.")
 
-func after_each():
+func _after_each():
 	SocketIOClient.close()
 	if SocketIOClient.connected.is_connected(_on_client_connected):
 		SocketIOClient.connected.disconnect(_on_client_connected)

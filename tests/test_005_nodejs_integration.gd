@@ -1,4 +1,4 @@
-extends GutTest
+extends AutoworkTest
 
 var client_connected: bool = false
 var ns_connected: String = ""
@@ -6,12 +6,12 @@ var received_events: Array = []
 var ack_status: bool = false
 var ack_payload: String = ""
 
-func before_each():
+func _before_each():
 	SocketIOClient.close()
 	SocketIOClient.connected.connect(_on_client_connected)
 	SocketIOClient.namespace_connected.connect(_on_namespace_connected)
 
-func after_each():
+func _after_each():
 	SocketIOClient.close()
 	if SocketIOClient.connected.is_connected(_on_client_connected):
 		SocketIOClient.connected.disconnect(_on_client_connected)
@@ -40,6 +40,9 @@ func _on_ack_received(data: Array):
 		ack_payload = data[0].get("payload", "")
 
 func test_007_nodejs_integration():
+	if OS.get_environment("SOCKETIO_LIVE_TESTS") != "1":
+		pending("Requires Node Socket.IO server on ws://localhost:3000")
+		return
 	# Connect to Node.js server
 	var err = SocketIOClient.connect_to_url("ws://localhost:3000")
 	assert_eq(err, OK, "Connection triggers safely to global Node.js bindings.")
