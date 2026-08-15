@@ -7,7 +7,7 @@ var ns_connected: String = ""
 
 const TEST_PORT = 9094
 
-func before_each():
+func _before_each():
 	SocketIOClient.close()
 	SocketIOClient.connected.connect(_on_client_connected)
 	SocketIOClient.namespace_connected.connect(_on_namespace_connected)
@@ -16,7 +16,7 @@ func before_each():
 	var err = tcp_server.listen(TEST_PORT)
 	assert_eq(err, OK, "Mock TCPServer allocated safely.")
 
-func after_each():
+func _after_each():
 	SocketIOClient.close()
 	if SocketIOClient.connected.is_connected(_on_client_connected):
 		SocketIOClient.connected.disconnect(_on_client_connected)
@@ -49,7 +49,7 @@ func test_006_socketio_namespaces():
 		if tcp_server.is_connection_available():
 			stream = tcp_server.take_connection()
 			break
-		OS.delay_msec(50)
+		await get_tree().create_timer(0.05).timeout
 		time_waited += 0.05
 		SocketIOClient.poll()
 		
@@ -62,7 +62,7 @@ func test_006_socketio_namespaces():
 		while time_waited < 2.0 and mock_server_peer.get_ready_state() != WebSocketPeer.STATE_OPEN:
 			mock_server_peer.poll()
 			SocketIOClient.poll()
-			OS.delay_msec(50)
+			await get_tree().create_timer(0.05).timeout
 			time_waited += 0.05
 			
 		# Wait for '/' connect request natively
@@ -87,7 +87,7 @@ func test_006_socketio_namespaces():
 						mock_server_peer.send_text("40[{\"sid\":\"mock-123\"}]")
 			if client_connected:
 				break
-			OS.delay_msec(50)
+			await get_tree().create_timer(0.05).timeout
 			time_waited += 0.05
 			
 		assert_true(client_connected, "Signal connected explicitly fired.")
@@ -112,7 +112,7 @@ func test_006_socketio_namespaces():
 					mock_server_peer.send_text("40/lobby,[{\"sid\":\"mock-123\"}]")
 			if ns_connected == "/lobby":
 				break
-			OS.delay_msec(50)
+			await get_tree().create_timer(0.05).timeout
 			time_waited += 0.05
 			
 		assert_true(received_lobby_req, "Custom namespace mapping parsed securely.")

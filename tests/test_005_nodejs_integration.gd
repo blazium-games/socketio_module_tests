@@ -6,12 +6,12 @@ var received_events: Array = []
 var ack_status: bool = false
 var ack_payload: String = ""
 
-func before_each():
+func _before_each():
 	SocketIOClient.close()
 	SocketIOClient.connected.connect(_on_client_connected)
 	SocketIOClient.namespace_connected.connect(_on_namespace_connected)
 
-func after_each():
+func _after_each():
 	SocketIOClient.close()
 	if SocketIOClient.connected.is_connected(_on_client_connected):
 		SocketIOClient.connected.disconnect(_on_client_connected)
@@ -40,6 +40,9 @@ func _on_ack_received(data: Array):
 		ack_payload = data[0].get("payload", "")
 
 func test_007_nodejs_integration():
+	if OS.get_environment("SOCKETIO_LIVE_TESTS") != "1":
+		pending("Requires Node Socket.IO server on ws://localhost:3000")
+		return
 	# Connect to Node.js server
 	var err = SocketIOClient.connect_to_url("ws://localhost:3000")
 	assert_eq(err, OK, "Connection triggers safely to global Node.js bindings.")
@@ -54,7 +57,7 @@ func test_007_nodejs_integration():
 		SocketIOClient.poll()
 		if client_connected:
 			break
-		OS.delay_msec(50)
+		await get_tree().create_timer(0.05).timeout
 		time_waited += 0.05
 		
 	assert_true(client_connected, "Signal connected explicitly fired against Node.js.")
@@ -67,14 +70,14 @@ func test_007_nodejs_integration():
 			SocketIOClient.poll()
 			if received_events.size() > 0:
 				break
-			OS.delay_msec(50)
+			await get_tree().create_timer(0.05).timeout
 			time_waited += 0.05
 		assert_true(received_events.size() > 0, "Node.js standard initial `chat_message` parsed securely (Size: %d)." % received_events.size())
 		if received_events.size() > 0:
 			assert_eq(received_events[0].data.get("user", ""), "admin", "Dictionary maps string matches exactly.")
 			
 		# Test emitting to Node.js
-		root_ns.emit("client_event", [{"message": "hello from godot!"}])
+		root_ns.emit("client_event", [{"message": "Hello from Blazium!"}])
 		
 		# Test ACK callbacks
 		root_ns.emit_with_ack("request_data", [{"query": "fetch"}], _on_ack_received, 5.0)
@@ -84,7 +87,7 @@ func test_007_nodejs_integration():
 			SocketIOClient.poll()
 			if ack_status:
 				break
-			OS.delay_msec(50)
+			await get_tree().create_timer(0.05).timeout
 			time_waited += 0.05
 			
 		assert_true(ack_status, "ACK callback natively executed triggered securely by Node.js responder.")
@@ -99,7 +102,7 @@ func test_007_nodejs_integration():
 			SocketIOClient.poll()
 			if ns_connected == "/lobby":
 				break
-			OS.delay_msec(50)
+			await get_tree().create_timer(0.05).timeout
 			time_waited += 0.05
 			
 		assert_eq(ns_connected, "/lobby", "Custom /lobby namespace successfully triggered bridging constraints perfectly.")

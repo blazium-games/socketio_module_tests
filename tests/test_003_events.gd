@@ -8,7 +8,7 @@ var event_data: Dictionary = {}
 
 const TEST_PORT = 9093
 
-func before_each():
+func _before_each():
 	SocketIOClient.close()
 	SocketIOClient.connected.connect(_on_client_connected)
 	
@@ -16,7 +16,7 @@ func before_each():
 	var err = tcp_server.listen(TEST_PORT)
 	assert_eq(err, OK, "Mock TCPServer allocated safely.")
 
-func after_each():
+func _after_each():
 	SocketIOClient.close()
 	if SocketIOClient.connected.is_connected(_on_client_connected):
 		SocketIOClient.connected.disconnect(_on_client_connected)
@@ -52,7 +52,7 @@ func test_005_socketio_events():
 		if tcp_server.is_connection_available():
 			stream = tcp_server.take_connection()
 			break
-		OS.delay_msec(50)
+		await get_tree().create_timer(0.05).timeout
 		time_waited += 0.05
 		SocketIOClient.poll()
 		
@@ -67,7 +67,7 @@ func test_005_socketio_events():
 		while time_waited < 2.0 and mock_server_peer.get_ready_state() != WebSocketPeer.STATE_OPEN:
 			mock_server_peer.poll()
 			SocketIOClient.poll()
-			OS.delay_msec(50)
+			await get_tree().create_timer(0.05).timeout
 			time_waited += 0.05
 			
 		# Wait for connect request
@@ -93,7 +93,7 @@ func test_005_socketio_events():
 						mock_server_peer.send_text("40[{\"sid\":\"mock-123\"}]")
 			if client_connected:
 				break
-			OS.delay_msec(50)
+			await get_tree().create_timer(0.05).timeout
 			time_waited += 0.05
 			
 		assert_true(client_connected, "Signal connected explicitly fired.")
@@ -115,7 +115,7 @@ func test_005_socketio_events():
 			
 			if event_received == "chat_message":
 				break
-			OS.delay_msec(50)
+			await get_tree().create_timer(0.05).timeout
 			time_waited += 0.05
 			
 		assert_eq(event_received, "chat_message", "Custom generic event retrieved actively mapping payloads exactly.")

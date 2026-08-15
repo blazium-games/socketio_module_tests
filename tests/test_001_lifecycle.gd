@@ -1,9 +1,9 @@
 extends AutoworkTest
 
-func before_each():
+func _before_each():
 	SocketIOClient.close()
 
-func after_each():
+func _after_each():
 	SocketIOClient.close()
 
 func test_001_initial_state():
